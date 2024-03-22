@@ -1,0 +1,717 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jmeterTestPlan version="1.2" properties="5.0" jmeter="5.6.3">
+  <hashTree>
+    <TestPlan guiclass="TestPlanGui" testclass="TestPlan" testname="DuitNow Webhook Credit Transfer and Lookup">
+      <elementProp name="TestPlan.user_defined_variables" elementType="Arguments" guiclass="ArgumentsPanel" testclass="Arguments" testname="用户定义的变量">
+        <collectionProp name="Arguments.arguments"/>
+      </elementProp>
+    </TestPlan>
+    <hashTree>
+      <JDBCDataSource guiclass="TestBeanGUI" testclass="JDBCDataSource" testname="JDBC Connection Configuration">
+        <stringProp name="dataSource">conn</stringProp>
+        <stringProp name="poolMax">0</stringProp>
+        <stringProp name="timeout">10000</stringProp>
+        <stringProp name="trimInterval">60000</stringProp>
+        <boolProp name="autocommit">true</boolProp>
+        <stringProp name="transactionIsolation">DEFAULT</stringProp>
+        <boolProp name="preinit">false</boolProp>
+        <stringProp name="initQuery"></stringProp>
+        <boolProp name="keepAlive">true</boolProp>
+        <stringProp name="connectionAge">5000</stringProp>
+        <stringProp name="checkQuery"></stringProp>
+        <stringProp name="dbUrl">jdbc:postgresql://pgm-zf8o0nr0x014j5h2go.pgsql.kualalumpur.rds.aliyuncs.com:5432/payment?characterEncoding=utf8</stringProp>
+        <stringProp name="driver">org.postgresql.Driver</stringProp>
+        <stringProp name="username">temp_mike</stringProp>
+        <stringProp name="password">miKe0428!</stringProp>
+        <stringProp name="connectionProperties"></stringProp>
+      </JDBCDataSource>
+      <hashTree/>
+      <SetupThreadGroup guiclass="SetupThreadGroupGui" testclass="SetupThreadGroup" testname="setUp Thread Group" enabled="false">
+        <intProp name="ThreadGroup.num_threads">1</intProp>
+        <intProp name="ThreadGroup.ramp_time">1</intProp>
+        <boolProp name="ThreadGroup.same_user_on_next_iteration">true</boolProp>
+        <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
+        <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller">
+          <stringProp name="LoopController.loops">1</stringProp>
+          <boolProp name="LoopController.continue_forever">false</boolProp>
+        </elementProp>
+      </SetupThreadGroup>
+      <hashTree>
+        <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="JDBC Request">
+          <stringProp name="dataSource">conn</stringProp>
+          <stringProp name="queryType">Select Statement</stringProp>
+          <stringProp name="query">select  c.id_number,f.account_id
+from payment.fund_option f join payment.customer c
+on f.customer_id != &apos;YTL&apos; and f.customer_id::uuid = c.id
+limit 80000;   </stringProp>
+          <stringProp name="queryArguments"></stringProp>
+          <stringProp name="queryArgumentsTypes"></stringProp>
+          <stringProp name="variableNames">idNumber,accountNumber</stringProp>
+          <stringProp name="resultVariable"></stringProp>
+          <stringProp name="queryTimeout"></stringProp>
+          <stringProp name="resultSetMaxRows"></stringProp>
+          <stringProp name="resultSetHandler">Store as String</stringProp>
+        </JDBCSampler>
+        <hashTree/>
+        <BeanShellSampler guiclass="BeanShellSamplerGui" testclass="BeanShellSampler" testname="BeanShell Sampler" enabled="true">
+          <stringProp name="BeanShellSampler.query">//创建建文对象
+FileWriter fw =new FileWriter(&quot;C:\\Project\\data\\C11.txt&quot;,false);
+//创建一个字符缓存斯出流
+BufferedWriter bufw=new BufferedWriter (fw);
+//获取sal 查询结果的行数
+String num=vars.get(&quot;idNumber_#&quot;);
+//字符串转换成int
+int count = Integer.parseInt(num);
+//制循环次数，写入count行文件
+for(int i=1;i&lt;=count;i++){
+//获取sqL查询结果第i行的数据
+    str_IdNu=vars.get(&quot;idNumber_&quot;+i);
+    str_AcNu=vars.get(&quot;accountNumber_&quot;+i);
+//将教据写入磁盘文件中
+    bufw.write(str_IdNu+&apos;,&apos;);
+    bufw.write(str_AcNu);
+//换行
+    bufw.write(&quot;\r\n&quot;);
+}
+//文件写入结束后，关闭流
+bufw.close();
+fw.close();
+</stringProp>
+        </BeanShellSampler>
+        <hashTree/>
+      </hashTree>
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="DuitNow Webhook Credit Transfer" enabled="false">
+        <intProp name="ThreadGroup.num_threads">20</intProp>
+        <intProp name="ThreadGroup.ramp_time">1</intProp>
+        <longProp name="ThreadGroup.duration">60</longProp>
+        <boolProp name="ThreadGroup.same_user_on_next_iteration">true</boolProp>
+        <boolProp name="ThreadGroup.scheduler">true</boolProp>
+        <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
+        <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="循环控制器">
+          <intProp name="LoopController.loops">-1</intProp>
+          <boolProp name="LoopController.continue_forever">false</boolProp>
+        </elementProp>
+      </ThreadGroup>
+      <hashTree>
+        <LoopController guiclass="LoopControlPanel" testclass="LoopController" testname="循环控制器" enabled="true">
+          <stringProp name="LoopController.loops">1</stringProp>
+        </LoopController>
+        <hashTree>
+          <CSVDataSet guiclass="TestBeanGUI" testclass="CSVDataSet" testname="CSV 数据文件设置" enabled="true">
+            <stringProp name="filename">C:/Project/data/C11.txt</stringProp>
+            <stringProp name="fileEncoding">UTF-8</stringProp>
+            <stringProp name="variableNames">idNumber,accountNumber</stringProp>
+            <boolProp name="ignoreFirstLine">false</boolProp>
+            <stringProp name="delimiter">,</stringProp>
+            <boolProp name="quotedData">false</boolProp>
+            <boolProp name="recycle">true</boolProp>
+            <boolProp name="stopThread">false</boolProp>
+            <stringProp name="shareMode">shareMode.all</stringProp>
+          </CSVDataSet>
+          <hashTree/>
+          <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="get-messageid" enabled="true">
+            <intProp name="HTTPSampler.concurrentPool">6</intProp>
+            <stringProp name="HTTPSampler.path">http://10.20.8.19/payments-platform-service/test/duitnow/business-message-id?transactionCode=CREDIT_TRANSFER</stringProp>
+            <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+            <stringProp name="HTTPSampler.method">GET</stringProp>
+            <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+            <boolProp name="HTTPSampler.postBodyRaw">false</boolProp>
+            <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables">
+              <collectionProp name="Arguments.arguments"/>
+            </elementProp>
+          </HTTPSamplerProxy>
+          <hashTree>
+            <RegexExtractor guiclass="RegexExtractorGui" testclass="RegexExtractor" testname="正则表达式提取器-businessMessageId" enabled="true">
+              <stringProp name="RegexExtractor.useHeaders">false</stringProp>
+              <boolProp name="RegexExtractor.default_empty_value">false</boolProp>
+              <stringProp name="RegexExtractor.refname">businessMessageId</stringProp>
+              <stringProp name="RegexExtractor.regex">(.*)</stringProp>
+              <stringProp name="RegexExtractor.template">$1$</stringProp>
+              <stringProp name="RegexExtractor.match_number">1</stringProp>
+              <stringProp name="RegexExtractor.default"></stringProp>
+            </RegexExtractor>
+            <hashTree/>
+          </hashTree>
+          <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="get-token" enabled="true">
+            <intProp name="HTTPSampler.concurrentPool">6</intProp>
+            <stringProp name="HTTPSampler.path">http://10.20.8.19/payments-platform-service/test/duitnow/jws-token?businessMessageId=${businessMessageId}</stringProp>
+            <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+            <stringProp name="HTTPSampler.method">POST</stringProp>
+            <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+            <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+            <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+              <collectionProp name="Arguments.arguments">
+                <elementProp name="" elementType="HTTPArgument">
+                  <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                  <stringProp name="Argument.value">{&#xd;
+    &quot;data&quot;: {&#xd;
+        &quot;businessMessageId&quot;: &quot;${businessMessageId}&quot;,&#xd;
+        &quot;createdDateTime&quot;: &quot;2023-11-27T03:15:08.228&quot;,&#xd;
+        &quot;endToEndId&quot;: &quot;${businessMessageId}&quot;,&#xd;
+        &quot;interbankSettlementAmount&quot;: 888888,&#xd;
+        &quot;debtor&quot;: {&#xd;
+            &quot;name&quot;: &quot;MOHD FAIZAL BIN ABDULLAH&quot;,&#xd;
+            &quot;id&quot;: &quot;${idNumber}&quot;&#xd;
+        },&#xd;
+        &quot;debtorAccount&quot;: {&#xd;
+            &quot;id&quot;: &quot;0123456789&quot;,&#xd;
+            &quot;type&quot;: &quot;SVGS&quot;,&#xd;
+            &quot;details&quot;: &quot;1&quot;&#xd;
+        },&#xd;
+        &quot;debtorAgent&quot;: {&#xd;
+            &quot;id&quot;: &quot;BIMBMYKL&quot;&#xd;
+        },&#xd;
+        &quot;creditorAccount&quot;: {&#xd;
+            &quot;id&quot;: &quot;${accountNumber}&quot;,&#xd;
+            &quot;type&quot;: &quot;SVGS&quot;&#xd;
+        },&#xd;
+        &quot;creditor&quot;: {&#xd;
+            &quot;name&quot;: &quot;MOHD FAIZAL BIN ABDULLAH&quot;&#xd;
+        },&#xd;
+        &quot;recipientReference&quot;: &quot;Fund Transfer&quot;,&#xd;
+        &quot;secondaryValidationIndicator&quot;: &quot;N&quot;&#xd;
+    }&#xd;
+}</stringProp>
+                  <stringProp name="Argument.metadata">=</stringProp>
+                </elementProp>
+              </collectionProp>
+            </elementProp>
+          </HTTPSamplerProxy>
+          <hashTree>
+            <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP信息头管理器" enabled="true">
+              <collectionProp name="HeaderManager.headers">
+                <elementProp name="Content-Type" elementType="Header">
+                  <stringProp name="Header.name">Content-Type</stringProp>
+                  <stringProp name="Header.value">application/json</stringProp>
+                </elementProp>
+              </collectionProp>
+            </HeaderManager>
+            <hashTree/>
+            <RegexExtractor guiclass="RegexExtractorGui" testclass="RegexExtractor" testname="正则表达式提取器-token" enabled="true">
+              <stringProp name="RegexExtractor.useHeaders">false</stringProp>
+              <boolProp name="RegexExtractor.default_empty_value">false</boolProp>
+              <stringProp name="RegexExtractor.refname">token</stringProp>
+              <stringProp name="RegexExtractor.regex">(.*)</stringProp>
+              <stringProp name="RegexExtractor.template">$1$</stringProp>
+              <stringProp name="RegexExtractor.match_number">1</stringProp>
+              <stringProp name="RegexExtractor.default"></stringProp>
+            </RegexExtractor>
+            <hashTree/>
+          </hashTree>
+          <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="DuitNow Webhook Credit Transfer">
+            <intProp name="HTTPSampler.concurrentPool">6</intProp>
+            <stringProp name="HTTPSampler.path">http://10.20.8.19/payments-platform-service/duitnow/webhook/v2/initiate</stringProp>
+            <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+            <stringProp name="HTTPSampler.method">POST</stringProp>
+            <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+            <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+            <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+              <collectionProp name="Arguments.arguments">
+                <elementProp name="" elementType="HTTPArgument">
+                  <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                  <stringProp name="Argument.value">{&#xd;
+    &quot;data&quot;: {&#xd;
+        &quot;businessMessageId&quot;: &quot;${businessMessageId}&quot;,&#xd;
+        &quot;createdDateTime&quot;: &quot;2023-11-27T03:15:08.228&quot;,&#xd;
+        &quot;endToEndId&quot;: &quot;${businessMessageId}&quot;,&#xd;
+        &quot;interbankSettlementAmount&quot;: 20,&#xd;
+        &quot;debtor&quot;: {&#xd;
+            &quot;name&quot;: &quot;MOHD FAIZAL BIN ABDULLAH&quot;,&#xd;
+            &quot;id&quot;: &quot;${idNumber}&quot;&#xd;
+        },&#xd;
+        &quot;debtorAccount&quot;: {&#xd;
+            &quot;id&quot;: &quot;0123456789&quot;,&#xd;
+            &quot;type&quot;: &quot;SVGS&quot;,&#xd;
+            &quot;details&quot;: &quot;1&quot;&#xd;
+        },&#xd;
+        &quot;debtorAgent&quot;: {&#xd;
+            &quot;id&quot;: &quot;BIMBMYKL&quot;&#xd;
+        },&#xd;
+        &quot;creditorAccount&quot;: {&#xd;
+            &quot;id&quot;: &quot;${accountNumber}&quot;,&#xd;
+            &quot;type&quot;: &quot;SVGS&quot;&#xd;
+        },&#xd;
+        &quot;creditor&quot;: {&#xd;
+            &quot;name&quot;: &quot;MOHD FAIZAL BIN ABDULLAH&quot;&#xd;
+        },&#xd;
+        &quot;recipientReference&quot;: &quot;Fund Transfer&quot;,&#xd;
+        &quot;secondaryValidationIndicator&quot;: &quot;N&quot;&#xd;
+    }&#xd;
+}</stringProp>
+                  <stringProp name="Argument.metadata">=</stringProp>
+                </elementProp>
+              </collectionProp>
+            </elementProp>
+          </HTTPSamplerProxy>
+          <hashTree>
+            <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP信息头管理器">
+              <collectionProp name="HeaderManager.headers">
+                <elementProp name="" elementType="Header">
+                  <stringProp name="Header.name">accept</stringProp>
+                  <stringProp name="Header.value">*/*</stringProp>
+                </elementProp>
+                <elementProp name="" elementType="Header">
+                  <stringProp name="Header.name">Content-Type</stringProp>
+                  <stringProp name="Header.value">application/json</stringProp>
+                </elementProp>
+                <elementProp name="" elementType="Header">
+                  <stringProp name="Header.name">X-Business-Message-Id</stringProp>
+                  <stringProp name="Header.value">${businessMessageId}</stringProp>
+                </elementProp>
+                <elementProp name="Authorization" elementType="Header">
+                  <stringProp name="Header.name">Authorization</stringProp>
+                  <stringProp name="Header.value">Bearer ${token}</stringProp>
+                </elementProp>
+              </collectionProp>
+            </HeaderManager>
+            <hashTree/>
+            <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="Response Assertion">
+              <collectionProp name="Asserion.test_strings">
+                <stringProp name="-1968526685">createdDateTime</stringProp>
+              </collectionProp>
+              <stringProp name="Assertion.custom_message"></stringProp>
+              <stringProp name="Assertion.test_field">Assertion.response_data</stringProp>
+              <boolProp name="Assertion.assume_success">false</boolProp>
+              <intProp name="Assertion.test_type">16</intProp>
+            </ResponseAssertion>
+            <hashTree/>
+          </hashTree>
+        </hashTree>
+      </hashTree>
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Thread Group" enabled="false">
+        <intProp name="ThreadGroup.num_threads">20</intProp>
+        <intProp name="ThreadGroup.ramp_time">1</intProp>
+        <longProp name="ThreadGroup.duration">60</longProp>
+        <boolProp name="ThreadGroup.same_user_on_next_iteration">true</boolProp>
+        <boolProp name="ThreadGroup.scheduler">true</boolProp>
+        <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
+        <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller">
+          <intProp name="LoopController.loops">-1</intProp>
+          <boolProp name="LoopController.continue_forever">false</boolProp>
+        </elementProp>
+      </ThreadGroup>
+      <hashTree>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="get-messageid" enabled="true">
+          <intProp name="HTTPSampler.concurrentPool">6</intProp>
+          <stringProp name="HTTPSampler.path">http://10.20.8.19/payments-platform-service/test/duitnow/business-message-id?transactionCode=CREDIT_TRANSFER</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <stringProp name="HTTPSampler.method">GET</stringProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.postBodyRaw">false</boolProp>
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables">
+            <collectionProp name="Arguments.arguments"/>
+          </elementProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <RegexExtractor guiclass="RegexExtractorGui" testclass="RegexExtractor" testname="正则表达式提取器-businessMessageId" enabled="true">
+            <stringProp name="RegexExtractor.useHeaders">false</stringProp>
+            <boolProp name="RegexExtractor.default_empty_value">false</boolProp>
+            <stringProp name="RegexExtractor.refname">businessMessageId</stringProp>
+            <stringProp name="RegexExtractor.regex">(.*)</stringProp>
+            <stringProp name="RegexExtractor.template">$1$</stringProp>
+            <stringProp name="RegexExtractor.match_number">1</stringProp>
+            <stringProp name="RegexExtractor.default"></stringProp>
+          </RegexExtractor>
+          <hashTree/>
+        </hashTree>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="get-token" enabled="true">
+          <intProp name="HTTPSampler.concurrentPool">6</intProp>
+          <stringProp name="HTTPSampler.path">http://10.20.8.19/payments-platform-service/test/duitnow/jws-token?businessMessageId=${businessMessageId}</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <stringProp name="HTTPSampler.method">POST</stringProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+            <collectionProp name="Arguments.arguments">
+              <elementProp name="" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                <stringProp name="Argument.value">{&#xd;
+    &quot;data&quot;: {&#xd;
+        &quot;businessMessageId&quot;: &quot;${businessMessageId}&quot;,&#xd;
+        &quot;createdDateTime&quot;: &quot;2023-11-27T03:15:08.228&quot;,&#xd;
+        &quot;endToEndId&quot;: &quot;${businessMessageId}&quot;,&#xd;
+        &quot;interbankSettlementAmount&quot;: 20,&#xd;
+        &quot;debtor&quot;: {&#xd;
+            &quot;name&quot;: &quot;MOHD FAIZAL BIN ABDULLAH&quot;,&#xd;
+            &quot;id&quot;: &quot;911101010001&quot;&#xd;
+        },&#xd;
+        &quot;debtorAccount&quot;: {&#xd;
+            &quot;id&quot;: &quot;0123456789&quot;,&#xd;
+            &quot;type&quot;: &quot;SVGS&quot;,&#xd;
+            &quot;details&quot;: &quot;1&quot;&#xd;
+        },&#xd;
+        &quot;debtorAgent&quot;: {&#xd;
+            &quot;id&quot;: &quot;BIMBMYKL&quot;&#xd;
+        },&#xd;
+        &quot;creditorAccount&quot;: {&#xd;
+            &quot;id&quot;: &quot;8605667261&quot;,&#xd;
+            &quot;type&quot;: &quot;SVGS&quot;&#xd;
+        },&#xd;
+        &quot;creditor&quot;: {&#xd;
+            &quot;name&quot;: &quot;MOHD FAIZAL BIN ABDULLAH&quot;&#xd;
+        },&#xd;
+        &quot;recipientReference&quot;: &quot;Fund Transfer&quot;,&#xd;
+        &quot;secondaryValidationIndicator&quot;: &quot;N&quot;&#xd;
+    }&#xd;
+}</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+            </collectionProp>
+          </elementProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP信息头管理器" enabled="true">
+            <collectionProp name="HeaderManager.headers">
+              <elementProp name="Content-Type" elementType="Header">
+                <stringProp name="Header.name">Content-Type</stringProp>
+                <stringProp name="Header.value">application/json</stringProp>
+              </elementProp>
+            </collectionProp>
+          </HeaderManager>
+          <hashTree/>
+          <RegexExtractor guiclass="RegexExtractorGui" testclass="RegexExtractor" testname="正则表达式提取器-token">
+            <stringProp name="RegexExtractor.useHeaders">false</stringProp>
+            <boolProp name="RegexExtractor.default_empty_value">false</boolProp>
+            <stringProp name="RegexExtractor.refname">token</stringProp>
+            <stringProp name="RegexExtractor.regex">(.*)</stringProp>
+            <stringProp name="RegexExtractor.template">$1$</stringProp>
+            <stringProp name="RegexExtractor.match_number">1</stringProp>
+            <stringProp name="RegexExtractor.default"></stringProp>
+          </RegexExtractor>
+          <hashTree/>
+        </hashTree>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="DuitNow Webhook Credit Transfer">
+          <intProp name="HTTPSampler.concurrentPool">6</intProp>
+          <stringProp name="HTTPSampler.path">http://10.20.8.19/payments-platform-service/duitnow/webhook/v2/initiate</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <stringProp name="HTTPSampler.method">POST</stringProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+            <collectionProp name="Arguments.arguments">
+              <elementProp name="" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                <stringProp name="Argument.value">{&#xd;
+    &quot;data&quot;: {&#xd;
+        &quot;businessMessageId&quot;: &quot;${businessMessageId}&quot;,&#xd;
+        &quot;createdDateTime&quot;: &quot;2023-11-27T03:15:08.228&quot;,&#xd;
+        &quot;endToEndId&quot;: &quot;${businessMessageId}&quot;,&#xd;
+        &quot;interbankSettlementAmount&quot;: 20,&#xd;
+        &quot;debtor&quot;: {&#xd;
+            &quot;name&quot;: &quot;MOHD FAIZAL BIN ABDULLAH&quot;,&#xd;
+            &quot;id&quot;: &quot;911101010001&quot;&#xd;
+        },&#xd;
+        &quot;debtorAccount&quot;: {&#xd;
+            &quot;id&quot;: &quot;0123456789&quot;,&#xd;
+            &quot;type&quot;: &quot;SVGS&quot;,&#xd;
+            &quot;details&quot;: &quot;1&quot;&#xd;
+        },&#xd;
+        &quot;debtorAgent&quot;: {&#xd;
+            &quot;id&quot;: &quot;BIMBMYKL&quot;&#xd;
+        },&#xd;
+        &quot;creditorAccount&quot;: {&#xd;
+            &quot;id&quot;: &quot;8605667261&quot;,&#xd;
+            &quot;type&quot;: &quot;SVGS&quot;&#xd;
+        },&#xd;
+        &quot;creditor&quot;: {&#xd;
+            &quot;name&quot;: &quot;MOHD FAIZAL BIN ABDULLAH&quot;&#xd;
+        },&#xd;
+        &quot;recipientReference&quot;: &quot;Fund Transfer&quot;,&#xd;
+        &quot;secondaryValidationIndicator&quot;: &quot;N&quot;&#xd;
+    }&#xd;
+}</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+            </collectionProp>
+          </elementProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP信息头管理器" enabled="true">
+            <collectionProp name="HeaderManager.headers">
+              <elementProp name="" elementType="Header">
+                <stringProp name="Header.name">accept</stringProp>
+                <stringProp name="Header.value">*/*</stringProp>
+              </elementProp>
+              <elementProp name="" elementType="Header">
+                <stringProp name="Header.name">Content-Type</stringProp>
+                <stringProp name="Header.value">application/json</stringProp>
+              </elementProp>
+              <elementProp name="" elementType="Header">
+                <stringProp name="Header.name">X-Business-Message-Id</stringProp>
+                <stringProp name="Header.value">${businessMessageId}</stringProp>
+              </elementProp>
+              <elementProp name="Authorization" elementType="Header">
+                <stringProp name="Header.name">Authorization</stringProp>
+                <stringProp name="Header.value">Bearer ${token}</stringProp>
+              </elementProp>
+            </collectionProp>
+          </HeaderManager>
+          <hashTree/>
+          <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="Response Assertion">
+            <collectionProp name="Asserion.test_strings">
+              <stringProp name="-1968526685">createdDateTime</stringProp>
+            </collectionProp>
+            <stringProp name="Assertion.custom_message"></stringProp>
+            <stringProp name="Assertion.test_field">Assertion.response_data</stringProp>
+            <boolProp name="Assertion.assume_success">false</boolProp>
+            <intProp name="Assertion.test_type">16</intProp>
+          </ResponseAssertion>
+          <hashTree/>
+        </hashTree>
+      </hashTree>
+      <ResultCollector guiclass="ViewResultsFullVisualizer" testclass="ResultCollector" testname="View Results Tree" enabled="true">
+        <boolProp name="ResultCollector.error_logging">false</boolProp>
+        <objProp>
+          <name>saveConfig</name>
+          <value class="SampleSaveConfiguration">
+            <time>true</time>
+            <latency>true</latency>
+            <timestamp>true</timestamp>
+            <success>true</success>
+            <label>true</label>
+            <code>true</code>
+            <message>true</message>
+            <threadName>true</threadName>
+            <dataType>true</dataType>
+            <encoding>false</encoding>
+            <assertions>true</assertions>
+            <subresults>true</subresults>
+            <responseData>false</responseData>
+            <samplerData>false</samplerData>
+            <xml>false</xml>
+            <fieldNames>true</fieldNames>
+            <responseHeaders>false</responseHeaders>
+            <requestHeaders>false</requestHeaders>
+            <responseDataOnError>false</responseDataOnError>
+            <saveAssertionResultsFailureMessage>true</saveAssertionResultsFailureMessage>
+            <assertionsResultsToSave>0</assertionsResultsToSave>
+            <bytes>true</bytes>
+            <sentBytes>true</sentBytes>
+            <url>true</url>
+            <threadCounts>true</threadCounts>
+            <idleTime>true</idleTime>
+            <connectTime>true</connectTime>
+          </value>
+        </objProp>
+        <stringProp name="filename"></stringProp>
+      </ResultCollector>
+      <hashTree/>
+      <ResultCollector guiclass="StatVisualizer" testclass="ResultCollector" testname="Aggregate Report" enabled="true">
+        <boolProp name="ResultCollector.error_logging">false</boolProp>
+        <objProp>
+          <name>saveConfig</name>
+          <value class="SampleSaveConfiguration">
+            <time>true</time>
+            <latency>true</latency>
+            <timestamp>true</timestamp>
+            <success>true</success>
+            <label>true</label>
+            <code>true</code>
+            <message>true</message>
+            <threadName>true</threadName>
+            <dataType>true</dataType>
+            <encoding>false</encoding>
+            <assertions>true</assertions>
+            <subresults>true</subresults>
+            <responseData>false</responseData>
+            <samplerData>false</samplerData>
+            <xml>false</xml>
+            <fieldNames>true</fieldNames>
+            <responseHeaders>false</responseHeaders>
+            <requestHeaders>false</requestHeaders>
+            <responseDataOnError>false</responseDataOnError>
+            <saveAssertionResultsFailureMessage>true</saveAssertionResultsFailureMessage>
+            <assertionsResultsToSave>0</assertionsResultsToSave>
+            <bytes>true</bytes>
+            <sentBytes>true</sentBytes>
+            <url>true</url>
+            <threadCounts>true</threadCounts>
+            <idleTime>true</idleTime>
+            <connectTime>true</connectTime>
+          </value>
+        </objProp>
+        <stringProp name="filename"></stringProp>
+      </ResultCollector>
+      <hashTree/>
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Thread Group" enabled="true">
+        <intProp name="ThreadGroup.num_threads">1</intProp>
+        <intProp name="ThreadGroup.ramp_time">1</intProp>
+        <boolProp name="ThreadGroup.same_user_on_next_iteration">true</boolProp>
+        <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
+        <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller">
+          <stringProp name="LoopController.loops">1</stringProp>
+          <boolProp name="LoopController.continue_forever">false</boolProp>
+        </elementProp>
+      </ThreadGroup>
+      <hashTree>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="get-messageid" enabled="true">
+          <intProp name="HTTPSampler.concurrentPool">6</intProp>
+          <stringProp name="HTTPSampler.path">http://10.20.8.19/payments-platform-service/test/duitnow/business-message-id?transactionCode=CREDIT_TRANSFER</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <stringProp name="HTTPSampler.method">GET</stringProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.postBodyRaw">false</boolProp>
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables">
+            <collectionProp name="Arguments.arguments"/>
+          </elementProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <RegexExtractor guiclass="RegexExtractorGui" testclass="RegexExtractor" testname="正则表达式提取器-businessMessageId" enabled="true">
+            <stringProp name="RegexExtractor.useHeaders">false</stringProp>
+            <boolProp name="RegexExtractor.default_empty_value">false</boolProp>
+            <stringProp name="RegexExtractor.refname">businessMessageId</stringProp>
+            <stringProp name="RegexExtractor.regex">(.*)</stringProp>
+            <stringProp name="RegexExtractor.template">$1$</stringProp>
+            <stringProp name="RegexExtractor.match_number">1</stringProp>
+            <stringProp name="RegexExtractor.default"></stringProp>
+          </RegexExtractor>
+          <hashTree/>
+        </hashTree>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="get-token" enabled="true">
+          <intProp name="HTTPSampler.concurrentPool">6</intProp>
+          <stringProp name="HTTPSampler.path">http://10.20.8.19/payments-platform-service/test/duitnow/jws-token?businessMessageId=${businessMessageId}</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <stringProp name="HTTPSampler.method">POST</stringProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+            <collectionProp name="Arguments.arguments">
+              <elementProp name="" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                <stringProp name="Argument.value">{&#xd;
+    &quot;data&quot;: {&#xd;
+        &quot;businessMessageId&quot;: &quot;${businessMessageId}&quot;,&#xd;
+        &quot;createdDateTime&quot;: &quot;2023-11-27T03:15:08.228&quot;,&#xd;
+        &quot;endToEndId&quot;: &quot;${businessMessageId}&quot;,&#xd;
+        &quot;interbankSettlementAmount&quot;: 888888,&#xd;
+        &quot;debtor&quot;: {&#xd;
+            &quot;name&quot;: &quot;MOHD FAIZAL BIN ABDULLAH&quot;,&#xd;
+            &quot;id&quot;: &quot;710301229504&quot;&#xd;
+        },&#xd;
+        &quot;debtorAccount&quot;: {&#xd;
+            &quot;id&quot;: &quot;0123456789&quot;,&#xd;
+            &quot;type&quot;: &quot;SVGS&quot;,&#xd;
+            &quot;details&quot;: &quot;1&quot;&#xd;
+        },&#xd;
+        &quot;debtorAgent&quot;: {&#xd;
+            &quot;id&quot;: &quot;BIMBMYKL&quot;&#xd;
+        },&#xd;
+        &quot;creditorAccount&quot;: {&#xd;
+            &quot;id&quot;: &quot;8619017203&quot;,&#xd;
+            &quot;type&quot;: &quot;SVGS&quot;&#xd;
+        },&#xd;
+        &quot;creditor&quot;: {&#xd;
+            &quot;name&quot;: &quot;MOHD FAIZAL BIN ABDULLAH&quot;&#xd;
+        },&#xd;
+        &quot;recipientReference&quot;: &quot;Fund Transfer&quot;,&#xd;
+        &quot;secondaryValidationIndicator&quot;: &quot;N&quot;&#xd;
+    }&#xd;
+}</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+            </collectionProp>
+          </elementProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP信息头管理器" enabled="true">
+            <collectionProp name="HeaderManager.headers">
+              <elementProp name="Content-Type" elementType="Header">
+                <stringProp name="Header.name">Content-Type</stringProp>
+                <stringProp name="Header.value">application/json</stringProp>
+              </elementProp>
+            </collectionProp>
+          </HeaderManager>
+          <hashTree/>
+          <RegexExtractor guiclass="RegexExtractorGui" testclass="RegexExtractor" testname="正则表达式提取器-token" enabled="true">
+            <stringProp name="RegexExtractor.useHeaders">false</stringProp>
+            <boolProp name="RegexExtractor.default_empty_value">false</boolProp>
+            <stringProp name="RegexExtractor.refname">token</stringProp>
+            <stringProp name="RegexExtractor.regex">(.*)</stringProp>
+            <stringProp name="RegexExtractor.template">$1$</stringProp>
+            <stringProp name="RegexExtractor.match_number">1</stringProp>
+            <stringProp name="RegexExtractor.default"></stringProp>
+          </RegexExtractor>
+          <hashTree/>
+        </hashTree>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="DuitNow Webhook Credit Transfer">
+          <intProp name="HTTPSampler.concurrentPool">6</intProp>
+          <stringProp name="HTTPSampler.path">http://10.20.8.19/payments-platform-service/duitnow/webhook/v2/initiate</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <stringProp name="HTTPSampler.method">POST</stringProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+            <collectionProp name="Arguments.arguments">
+              <elementProp name="" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                <stringProp name="Argument.value">{&#xd;
+    &quot;data&quot;: {&#xd;
+        &quot;businessMessageId&quot;: &quot;${businessMessageId}&quot;,&#xd;
+        &quot;createdDateTime&quot;: &quot;2023-11-27T03:15:08.228&quot;,&#xd;
+        &quot;endToEndId&quot;: &quot;${businessMessageId}&quot;,&#xd;
+        &quot;interbankSettlementAmount&quot;: 888888,&#xd;
+        &quot;debtor&quot;: {&#xd;
+            &quot;name&quot;: &quot;MOHD FAIZAL BIN ABDULLAH&quot;,&#xd;
+            &quot;id&quot;: &quot;710301229504&quot;&#xd;
+        },&#xd;
+        &quot;debtorAccount&quot;: {&#xd;
+            &quot;id&quot;: &quot;0123456789&quot;,&#xd;
+            &quot;type&quot;: &quot;SVGS&quot;,&#xd;
+            &quot;details&quot;: &quot;1&quot;&#xd;
+        },&#xd;
+        &quot;debtorAgent&quot;: {&#xd;
+            &quot;id&quot;: &quot;BIMBMYKL&quot;&#xd;
+        },&#xd;
+        &quot;creditorAccount&quot;: {&#xd;
+            &quot;id&quot;: &quot;8619017203&quot;,&#xd;
+            &quot;type&quot;: &quot;SVGS&quot;&#xd;
+        },&#xd;
+        &quot;creditor&quot;: {&#xd;
+            &quot;name&quot;: &quot;MOHD FAIZAL BIN ABDULLAH&quot;&#xd;
+        },&#xd;
+        &quot;recipientReference&quot;: &quot;Fund Transfer&quot;,&#xd;
+        &quot;secondaryValidationIndicator&quot;: &quot;N&quot;&#xd;
+    }&#xd;
+}</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+            </collectionProp>
+          </elementProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP信息头管理器">
+            <collectionProp name="HeaderManager.headers">
+              <elementProp name="" elementType="Header">
+                <stringProp name="Header.name">accept</stringProp>
+                <stringProp name="Header.value">*/*</stringProp>
+              </elementProp>
+              <elementProp name="" elementType="Header">
+                <stringProp name="Header.name">Content-Type</stringProp>
+                <stringProp name="Header.value">application/json</stringProp>
+              </elementProp>
+              <elementProp name="" elementType="Header">
+                <stringProp name="Header.name">X-Business-Message-Id</stringProp>
+                <stringProp name="Header.value">${businessMessageId}</stringProp>
+              </elementProp>
+              <elementProp name="Authorization" elementType="Header">
+                <stringProp name="Header.name">Authorization</stringProp>
+                <stringProp name="Header.value">Bearer ${token}</stringProp>
+              </elementProp>
+            </collectionProp>
+          </HeaderManager>
+          <hashTree/>
+          <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="Response Assertion" enabled="true">
+            <collectionProp name="Asserion.test_strings">
+              <stringProp name="-1968526685">createdDateTime</stringProp>
+            </collectionProp>
+            <stringProp name="Assertion.custom_message"></stringProp>
+            <stringProp name="Assertion.test_field">Assertion.response_data</stringProp>
+            <boolProp name="Assertion.assume_success">false</boolProp>
+            <intProp name="Assertion.test_type">16</intProp>
+          </ResponseAssertion>
+          <hashTree/>
+        </hashTree>
+      </hashTree>
+    </hashTree>
+  </hashTree>
+</jmeterTestPlan>
