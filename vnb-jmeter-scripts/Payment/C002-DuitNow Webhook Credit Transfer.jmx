@@ -293,7 +293,7 @@ fw.close();
         </elementProp>
       </ThreadGroup>
       <hashTree>
-        <Arguments guiclass="ArgumentsPanel" testclass="Arguments" testname="Environment Variable">
+        <Arguments guiclass="ArgumentsPanel" testclass="Arguments" testname="Environment Variable" enabled="true">
           <collectionProp name="Arguments.arguments">
             <elementProp name="GATEWAY_URL" elementType="Argument">
               <stringProp name="Argument.name">GATEWAY_URL</stringProp>
@@ -303,7 +303,7 @@ fw.close();
           </collectionProp>
         </Arguments>
         <hashTree/>
-        <CSVDataSet guiclass="TestBeanGUI" testclass="CSVDataSet" testname="Creditor Data Source">
+        <CSVDataSet guiclass="TestBeanGUI" testclass="CSVDataSet" testname="Creditor Data Source" enabled="true">
           <stringProp name="filename">/Users/mingjun.chin/Projects/performance-test-scripts/runs/20240325-rerun/data/duitnowCreditWebhookData.csv</stringProp>
           <stringProp name="fileEncoding">UTF-8</stringProp>
           <stringProp name="variableNames">accountNumber</stringProp>
@@ -316,7 +316,7 @@ fw.close();
           <stringProp name="TestPlan.comments">Source of creditor data</stringProp>
         </CSVDataSet>
         <hashTree/>
-        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="get-messageid">
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="get-messageid" enabled="true">
           <stringProp name="TestPlan.comments">To generate a Paynet business message ID</stringProp>
           <intProp name="HTTPSampler.concurrentPool">6</intProp>
           <stringProp name="HTTPSampler.path">${GATEWAY_URL}/payments-platform-service/test/duitnow/business-message-id?transactionCode=CREDIT_TRANSFER</stringProp>
@@ -340,7 +340,7 @@ fw.close();
           </RegexExtractor>
           <hashTree/>
         </hashTree>
-        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="get-token">
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="get-token" enabled="true">
           <intProp name="HTTPSampler.concurrentPool">6</intProp>
           <stringProp name="HTTPSampler.path">${GATEWAY_URL}/payments-platform-service/test/duitnow/jws-token?businessMessageId=${businessMessageId}</stringProp>
           <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
@@ -406,7 +406,7 @@ fw.close();
           </RegexExtractor>
           <hashTree/>
         </hashTree>
-        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="DuitNow Webhook Credit Transfer">
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="DuitNow Webhook Credit Transfer" enabled="true">
           <intProp name="HTTPSampler.concurrentPool">6</intProp>
           <stringProp name="HTTPSampler.path">${GATEWAY_URL}/payments-platform-service/duitnow/webhook/v2/initiate</stringProp>
           <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
